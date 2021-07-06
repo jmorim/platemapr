@@ -34,7 +34,8 @@ ui <- fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-            rHandsontableOutput('contents')
+            rHandsontableOutput('contents'),
+            rHandsontableOutput('seq')
         )
     )
 )
