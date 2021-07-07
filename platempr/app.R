@@ -42,10 +42,28 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    output$contents = renderRHandsontable({
+    platemap = reactive({
         req(input$file)
-        df = read_excel(input$file$datapath)
-        rhandsontable(df,
+        read_excel(input$file$datapath, col_names = FALSE)
+    })
+    
+    output$contents = renderRHandsontable({
+#        req(input$file)
+#        df = read_excel(input$file$datapath)
+        req(platemap())
+        rhandsontable(platemap(),
+                      readOnly = FALSE,
+                      selectCallback = TRUE)
+    })
+    
+    output$seq = renderRHandsontable({
+        req(input$contents_select$select)
+        row.selection = input$contents_select$select$rAll
+        col.selection = input$contents_select$select$cAll
+#        rhandsontable(platemap()[row.selection, col.selection],
+#                      readOnly = FALSE,
+#                      selectCallback = TRUE)
+        rhandsontable(unlist(platemap()[row.selection, col.selection]),
                       readOnly = FALSE,
                       selectCallback = TRUE)
     })
