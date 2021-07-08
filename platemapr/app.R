@@ -29,13 +29,16 @@ ui <- fluidPage(
                                  'xlsx',
                                  'xls')),
             tags$hr(),
+            rHandsontableOutput('seq.full')
             
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
             rHandsontableOutput('contents'),
-            rHandsontableOutput('seq')
+            column(width = 3,
+                   actionButton('add', label = 'add to sequence')),
+            rHandsontableOutput('seq.part')
         )
     )
 )
@@ -47,6 +50,8 @@ server <- function(input, output) {
         read_excel(input$file$datapath, col_names = FALSE)
     })
     
+    full.seq = reactiveValues(seq = c())
+    
     output$contents = renderRHandsontable({
 #        req(input$file)
 #        df = read_excel(input$file$datapath)
@@ -56,17 +61,46 @@ server <- function(input, output) {
                       selectCallback = TRUE)
     })
     
-    output$seq = renderRHandsontable({
+#    output$seq.part = renderRHandsontable({
+    seq.part = reactive({
         req(input$contents_select$select)
         row.selection = input$contents_select$select$rAll
         col.selection = input$contents_select$select$cAll
-#        rhandsontable(platemap()[row.selection, col.selection],
-#                      readOnly = FALSE,
-#                      selectCallback = TRUE)
-        rhandsontable(unlist(platemap()[row.selection, col.selection]),
-                      readOnly = FALSE,
-                      selectCallback = TRUE)
+        # Iterate through plate and make a list
+        listed.plate = c()
+        k = 1
+        plate.selection = platemap()[row.selection, col.selection]
+        for(i in 1:nrow(plate.selection)){
+            for(j in 1:ncol(plate.selection)){
+                listed.plate[k] = plate.selection[i, j]
+                k = k + 1
+            }
+        }
+        return(listed.plate)
+        
+        # Output handsontable for the list
+#        rhandsontable(as.data.frame(unlist(listed.plate)),
+#                      colHeaders = 'sequence part',
+#                      readOnly = TRUE)
+#        
     })
+    
+    output$seq.part = renderRHandsontable({
+        req(seq.part())
+        rhandsontable(as.data.frame(unlist(seq.part())),
+                      colHeaders = 'sequence part',
+                      readOnly = TRUE)
+    })
+    
+    observeEvent(input$add, {
+        full.seq$seq = c(full.seq$seq, unlist(seq.part()))
+    })
+    
+    output$seq.full = renderRHandsontable({
+        if (is.null(full.seq$seq)) return()
+        full.seq$seq
+    })
+    
 }
 
 # Run the application 
