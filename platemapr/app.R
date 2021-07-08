@@ -23,11 +23,11 @@ ui <- fluidPage(
             fileInput('file',
                       "Input plate map",
                       multiple = FALSE,
-                      accept = c('text/csv',
-                                 'text/comma-separated-values,text/plain',
+                      accept = c(#'text/csv',
+                                 #'text/comma-separated-values,text/plain',
                                  '.csv',
-                                 'xlsx',
-                                 'xls')),
+                                 '.xlsx',
+                                 '.xls')),
             tags$hr(),
             rHandsontableOutput('seq.full')
             
@@ -50,7 +50,7 @@ server <- function(input, output) {
         read_excel(input$file$datapath, col_names = FALSE)
     })
     
-    full.seq = reactiveValues(seq = c())
+    full.seq = reactiveValues(seq = c('prime'))
     
     output$contents = renderRHandsontable({
 #        req(input$file)
@@ -97,8 +97,10 @@ server <- function(input, output) {
     })
     
     output$seq.full = renderRHandsontable({
-        if (is.null(full.seq$seq)) return()
-        full.seq$seq
+#        if (is.null(full.seq$seq)) return(c())
+        rhandsontable(as.data.frame(full.seq$seq),
+                      colHeaders = 'full sequence',
+                      readOnly = TRUE)
     })
     
 }
