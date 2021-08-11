@@ -1,11 +1,15 @@
 # TODO
 # [ ] Add column for sample location
 # [ ] Add 'select all and copy' button
+# [ ] Add prime row checkbox
 # [X] Add reset button
 # [ ] Add equilibration sequence option (inj/loc = 3)
 # [?] Copy and paste to blank plate map by default
 # [ ] Make readxl column data types strings
 # [ ] Scale platemap with window
+#    - Can't be done apparently
+# [ ] Remove empty rows in final sequence
+# [ ] Move partial sequence to the right of scaled platemap
 
 
 library(shiny)
@@ -13,7 +17,7 @@ library(readxl)
 library(rhandsontable)
 
 ui <- fluidPage(
-
+#    tags$script(src = 'script.js'),
     # Application title
     titlePanel("platemapr"),
 
@@ -29,6 +33,10 @@ ui <- fluidPage(
                                  '.xls')),
             # hline ------------------------------------------------------------
             tags$hr(),
+            # checkboxes for options
+            checkboxInput('prime',
+                          'prime',
+                          value = T),
             # reset button -----------------------------------------------------
             actionButton('reset',
                          'reset',),
@@ -56,8 +64,31 @@ server <- function(input, output) {
         read_excel(input$file$datapath, col_names = FALSE)
     })
     
+#    seq.param = reactive{(
+#        input$prime
+#    )}
+    
+    def.seq = c('prime')
+#    def.seq = reactiveValues({
+#        if(input$prime == T){
+#            return(c('prime'))
+#        }
+#        else{
+#            return(c())
+#        }
+#    })
+#    if(input$prime == T){
+#        def.seq = c('prime')
+#    } else {
+#        def.seq = c()
+#    }
+    
     # default sequence with prime entry ----------------------------------------
-    full.seq = reactiveValues(seq = c('prime'))
+#    full.seq = reactiveValues(seq = c('prime'))
+    full.seq = reactiveValues(seq = def.seq)
+#    full.seq = reactive({
+#        
+#    })
     
     # output table from reactive var -------------------------------------------
     output$contents = renderRHandsontable({
